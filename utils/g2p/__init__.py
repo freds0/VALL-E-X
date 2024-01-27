@@ -7,6 +7,7 @@ from tokenizers import Tokenizer
 _symbol_to_id = {s: i for i, s in enumerate(symbols)}
 _id_to_symbol = {i: s for i, s in enumerate(symbols)}
 
+from tokenizers import models
 
 class PhonemeBpeTokenizer:
   def __init__(self, tokenizer_path = "./utils/g2p/bpe_1024.json"):
@@ -19,9 +20,12 @@ class PhonemeBpeTokenizer:
     phonemes = phonemes.replace(" ", "_")
     # 3. tokenize phonemes
     phoneme_tokens = self.tokenizer.encode(phonemes).ids
+
     assert(len(phoneme_tokens) == len(langs))
+
     if not len(phoneme_tokens):
       raise ValueError("Empty text is given")
+
     return phoneme_tokens, langs
 
 def text_to_sequence(text, cleaner_names):

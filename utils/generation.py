@@ -4,7 +4,7 @@ import torch
 from vocos import Vocos
 import logging
 import langid
-langid.set_languages(['en', 'zh', 'ja'])
+langid.set_languages(['en', 'zh', 'ja', 'pt', 'es'])
 
 import pathlib
 import platform
@@ -37,6 +37,10 @@ checkpoints_dir = "./checkpoints/"
 
 model_checkpoint_name = "vallex-checkpoint.pt"
 
+checkpoints_dir = "logs-vall-e-x/"
+model_checkpoint_name = "checkpoint-10000.pt"
+
+
 model = None
 
 codec = None
@@ -49,6 +53,7 @@ text_collater = get_text_token_collater()
 def preload_models():
     global model, codec, vocos
     if not os.path.exists(checkpoints_dir): os.mkdir(checkpoints_dir)
+    '''
     if not os.path.exists(os.path.join(checkpoints_dir, model_checkpoint_name)):
         import wget
         try:
@@ -75,7 +80,9 @@ def preload_models():
         prepend_bos=True,
         num_quantizers=NUM_QUANTIZERS,
     ).to(device)
-    checkpoint = torch.load(os.path.join(checkpoints_dir, model_checkpoint_name), map_location='cpu')
+    checkpoint_filepath = os.path.join(checkpoints_dir, model_checkpoint_name)
+    print(f"Loading checkpoint from {checkpoint_filepath}")
+    checkpoint = torch.load(checkpoint_filepath, map_location='cpu')
     missing_keys, unexpected_keys = model.load_state_dict(
         checkpoint["model"], strict=True
     )
@@ -94,6 +101,7 @@ def generate_audio(text, prompt=None, language='auto', accent='no-accent'):
     # detect language
     if language == "auto":
         language = langid.classify(text)[0]
+    
     lang_token = lang2token[language]
     lang = token2lang[lang_token]
     text = lang_token + text + lang_token

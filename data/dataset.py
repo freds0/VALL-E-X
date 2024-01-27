@@ -38,6 +38,8 @@ language_dict = {
     'en': 0,
     'zh': 1,
     'ja': 2,
+    'pt': 3,
+    'es': 4
 }
 def seq2phone(tokens: Union[List, np.ndarray]):
     """
