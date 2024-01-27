@@ -157,11 +157,14 @@ def mark_dark_l(text):
 
 
 def english_to_ipa(text):
-    import eng_to_ipa as ipa
+    #import eng_to_ipa as ipa
+    from utils.phonemizer.espeak_wrapper import ESpeak    
+    e = ESpeak(language="en-us", keep_puncs=False)
     text = unidecode(text).lower()
     text = expand_abbreviations(text)
     text = normalize_numbers(text)
-    phonemes = ipa.convert(text)
+    #phonemes = ipa.convert(text)
+    phonemes = e.phonemize(text)
     phonemes = collapse_whitespace(phonemes)
     return phonemes
 
