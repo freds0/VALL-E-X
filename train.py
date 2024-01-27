@@ -19,7 +19,7 @@
 # limitations under the License.
 """
 Usage:
-python3 bin/trainer.py \
+python3 train.py \
     --decoder-dim 1024 --nhead 16 --num-decoder-layers 12 \
     --max-duration 40 --model-name valle \
     --exp-dir exp/valle

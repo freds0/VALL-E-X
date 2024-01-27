@@ -13,22 +13,29 @@ if torch.cuda.is_available():
     device = torch.device("cuda", 0)
 from vocos import Vocos
 
+import pathlib
+import platform
+
+if platform.system() != "Windows":
+    pathlib.WindowsPath = pathlib.PosixPath
+
+
 def get_model(device):
     url = 'https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt'
 
     checkpoints_dir = "./checkpoints"
 
-    model_checkpoint_name = "vallex-checkpoint_modified.pt"
+    checkpoint_filepath = os.path.join("vallex-checkpoint.pt")
     if not os.path.exists(checkpoints_dir): os.mkdir(checkpoints_dir)
-    if not os.path.exists(os.path.join(checkpoints_dir, model_checkpoint_name)):
+    if not os.path.exists(checkpoint_filepath):
         import wget
-        print("3")
         try:
             logging.info(
                 "Downloading model from https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt ...")
             # download from https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt to ./checkpoints/vallex-checkpoint.pt
-            wget.download("https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt",
-                          out="./checkpoints/vallex-checkpoint.pt", bar=wget.bar_adaptive)
+            if not os.path.exists(checkpoint_filepath):
+                wget.download("https://huggingface.co/Plachta/VALL-E-X/resolve/main/vallex-checkpoint.pt",
+                          out=checkpoint_filepath, bar=wget.bar_adaptive)
         except Exception as e:
             logging.info(e)
             raise Exception(
@@ -47,11 +54,17 @@ def get_model(device):
         prepend_bos=True,
         num_quantizers=NUM_QUANTIZERS,
     ).to(device)
-    checkpoint = torch.load(os.path.join(checkpoints_dir, model_checkpoint_name), map_location='cpu')
-    missing_keys, unexpected_keys = model.load_state_dict(
-        checkpoint["model"], strict=True
-    )
-    assert not missing_keys
+
+    if os.path.exists(checkpoint_filepath):
+        print(f"Loading checkpoint {checkpoint_filepath}.")
+        checkpoint = torch.load(checkpoint_filepath, map_location='cpu')
+        missing_keys, unexpected_keys = model.load_state_dict(
+            checkpoint["model"], strict=True
+        )
+        assert not missing_keys
+    else:
+        print(f"Checkpoint file not found: {checkpoint_filepath}.")
+
 
     # Encodec
     codec = AudioTokenizer(device)
